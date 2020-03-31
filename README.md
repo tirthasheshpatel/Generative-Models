@@ -71,3 +71,15 @@ Some training instances are shown below.
 This model generates the following images!
 
 ![Generated images](images/rbm_generated_3.png)
+
+### Variational Auto-Encoders
+
+``WIP``
+
+### Masked Auto-Encoder Density Estimators
+
+``WIP``
+
+### Generative Adversarial Networks
+
+``WIP``
