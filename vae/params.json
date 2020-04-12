@@ -25,7 +25,7 @@
         "starting_target_shape": [7, 7, 32],
         "channels": [64, 32],
         "kernel_widths": [3, 3],
-        "strides": [1, 1],
+        "strides": [2, 2],
         "hidden_activation": "relu"
     }
 }
