@@ -11,7 +11,7 @@ class BinomialVLB(object):
         KL_loss = - 0.5 * tf.reduce_sum( -log_var + tf.math.exp( log_var ) + tf.square( loc ), axis=-1 )
         cross_entropy_loss = tf.reduce_sum( x * tf.math.log( x_recon ) + (1-x) * tf.math.log( 1-x_recon ), axis=[-3, -2, -1] )
         vlb = tf.reduce_mean(cross_entropy_loss - KL_loss)
-        return -vlb
+        return vlb
 
 class NormalVLB(object):
     def __init__(self, name="NormalVariationalLowerBound"):
@@ -22,4 +22,4 @@ class NormalVLB(object):
         KL_loss = - 0.5 * tf.reduce_sum( -log_var + tf.math.exp( log_var ) + tf.square( loc ), axis=-1 )
         reconstruction_loss = tf.reduce_sum( tf.square( x - x_recon ), axis=[-3, -2, -1] )
         vlb = tf.reduce_mean(reconstruction_loss - KL_loss)
-        return -vlb
+        return vlb
