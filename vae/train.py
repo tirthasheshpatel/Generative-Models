@@ -23,8 +23,8 @@ OPTIMIZERS = {
 }
 
 class Trainer(object):
-    def __init__(self, input_dims, latent_dims):
-        self.params = get_params("params.json")
+    def __init__(self):
+        self.params = get_params("vae/params.json")
 
         self.input_dims = self.params['input_dims']
         self.latent_dims = self.params['latent_dims']
