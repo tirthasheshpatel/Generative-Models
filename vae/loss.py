@@ -21,5 +21,5 @@ class NormalVLB(object):
     def unsigned_call(x, x_recon, loc, log_var):
         KL_loss = - 0.5 * tf.reduce_sum( -log_var + tf.math.exp( log_var ) + tf.square( loc ), axis=-1 )
         reconstruction_loss = tf.reduce_sum( tf.square( x - x_recon ), axis=[-3, -2, -1] )
-        vlb = tf.reduce_mean(reconstruction_loss - KL_loss)
+        vlb = tf.reduce_mean(reconstruction_loss + KL_loss)
         return vlb
