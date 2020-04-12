@@ -12,14 +12,14 @@ from tensorflow.keras.layers import Lambda
 from tensorflow.keras.models import Model
 from tensorflow.keras import Input
 import tensorflow.keras.backend as KB
-from .model import Encoder, Decoder
-from .loss import BinomialVLB, NormalVLB
-from .util import get_params
+from vae.model import Encoder, Decoder
+from vae.loss import BinomialVLB, NormalVLB
+from vae.util import get_params
 
 OPTIMIZERS = {
-    "rmsprop": RMSprop,
-    "adam": Adam,
-    "adagrad": Adagrad
+    "RMSprop": RMSprop,
+    "Adam": Adam,
+    "Adagrad": Adagrad
 }
 
 class Trainer(object):
@@ -32,30 +32,30 @@ class Trainer(object):
 
         self.x = Input(batch_shape=(self.batch_size, *self.input_dims))
 
-        self.encoder = Encoder(self.params['encoder'])(x)
-        self.get_loc = Lambda(lambda t: t[:, :latent_dims])(self.encoder)
-        self.get_log_var = Lambda(lambda t: t[:, latent_dims:])(self.encoder)
-        self.sample_z = Lambda(self._sampling)([self.get_loc, self.get_var])
-        self.decoder = Decoder(self.params['decoder'])(self.sample_z)
+        self.encoder = Encoder(**self.params['encoder'])(self.x)
+        self.get_loc = Lambda(lambda t: t[:, :self.latent_dims])(self.encoder)
+        self.get_log_var = Lambda(lambda t: t[:, self.latent_dims:])(self.encoder)
+        self.sample_z = Lambda(self._sampling)([self.get_loc, self.get_log_var])
+        self.decoder = Decoder(**self.params['decoder'])(self.sample_z)
 
-        self.model = Model(inputs=[self.x], outputs=[self.decoder, self.get_loc, self.get_log_var])
+        self.model = Model(inputs=[self.x], outputs=[self.decoder])
 
-        self.loss = getattr(self, self.params['loss'])
+        self.loss = getattr(self, self.params['loss'])(self.x, self.decoder, self.get_loc, self.get_log_var)
 
         self.learning_rate = self.params['learning_rate']
         self.optimizer = OPTIMIZERS[self.params['optimizer']](learning_rate=self.learning_rate)
 
         self.epochs = self.params['epochs']
 
-        self.model.compile(self.optimizer, lambda *args, **kwargs: loss(*args, **kwargs))
+        self.model.compile(self.optimizer, lambda *args, **kwargs: self.loss)
 
     @property
     def normal_vlb(self):
-        return NormalVLB
+        return NormalVLB.unsigned_call
 
     @property
     def binomial_vlb(self):
-        return BinomialVLB
+        return BinomialVLB.unsigned_call
     
     def _sampling(self, args):
         loc, log_var = args
@@ -69,4 +69,4 @@ class Trainer(object):
                               epochs=self.epochs,
                               batch_size=self.batch_size,
                               validation_data=(x_test, x_test),
-                              verbose=2)
+                              verbose=1)
