@@ -30,7 +30,7 @@ class Trainer(object):
         self.latent_dims = self.params['latent_dims']
         self.batch_size = self.params['batch_size']
 
-        self.x = Input(batch_size=(self.batch_size, *self.input_dims))
+        self.x = Input(batch_shape=(self.batch_size, *self.input_dims))
 
         self.encoder = Encoder(self.params['encoder'])(x)
         self.get_loc = Lambda(lambda t: t[:, :latent_dims])(self.encoder)

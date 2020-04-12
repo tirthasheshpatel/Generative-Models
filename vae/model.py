@@ -14,14 +14,14 @@ KB.set_floatx('float32')
 
 class Encoder(Layer):
     def __init__(self, channels, kernel_widths, strides,
-                 hidden_activations, output_activation,
+                 hidden_activation, output_activation,
                  latent_dims, name="encoder"):
         super(Encoder, self).__init__(name=name)
         self._latent_dims = latent_dims
         self._encoder_layers = []
         for channel, kernel_width, stride in zip(channels, kernel_widths, strides):
             _layer = Conv2D(channel, kernel_width, stride,
-                            activation=hidden_activations)
+                            activation=hidden_activation)
             self._encoder_layers.append(_layer)
         self._encoder_layers.add(Flatten())
         self._output_layer = Dense(latent_dims + latent_dims, output_activation)
@@ -40,7 +40,7 @@ class Decoder(Layer):
     def __init__(self, initial_dense_dims, initial_activation,
                  starting_target_shape,
                  channels, kernel_widths,
-                 strides, hidden_activations,
+                 strides, hidden_activation,
                  latent_dims, name="decoder"):
         super(Decoder, self).__init__(name=name)
         self._latent_dims = latent_dims
@@ -50,7 +50,7 @@ class Decoder(Layer):
         for channel, kernel_width, stride in zip(channels, kernel_widths, strides):
             _layer = Conv2DTranspose(channel, kernel_width, stride,
                                      padding='SAME',
-                                     activation=hidden_activations)
+                                     activation=hidden_activation)
             self.decoder_layers.append(_layer)
         self._output_layer = Conv2DTranspose(1, 3, 1, padding="SAME")
 
