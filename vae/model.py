@@ -10,7 +10,7 @@ from tensorflow.keras.models import Model, Sequential
 import tensorflow.keras.backend as KB
 
 KB.set_image_data_format('channels_last')
-KB.floatx('float32')
+KB.set_floatx('float32')
 
 class Encoder(Layer):
     def __init__(self, channels, kernel_widths, strides,
