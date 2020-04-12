@@ -46,20 +46,20 @@ class Decoder(Layer):
         self._latent_dims = latent_dims
         self._decoder_layers = []
         self._decoder_layers.append( Dense(initial_dense_dims, initial_activation) )
-        self.decoder_layers.append( Reshape(starting_target_shape) )
+        self._decoder_layers.append( Reshape(starting_target_shape) )
         for channel, kernel_width, stride in zip(channels, kernel_widths, strides):
             _layer = Conv2DTranspose(channel, kernel_width, stride,
                                      padding='SAME',
                                      activation=hidden_activation)
-            self.decoder_layers.append(_layer)
+            self._decoder_layers.append(_layer)
         self._output_layer = Conv2DTranspose(1, 3, 1, padding="SAME")
 
     def call(self, inputs):
         return self.unsigned_call(inputs)
 
     def unsigned_call(self, inputs):
-        X = self.decoder_layers[0](inputs)
-        for layer in self.decoder_layers[1:]:
+        X = self._decoder_layers[0](inputs)
+        for layer in self._decoder_layers[1:]:
             X = layer(X)
         decoded = self._output_layer(X)
         return decoded
