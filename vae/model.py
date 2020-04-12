@@ -23,7 +23,7 @@ class Encoder(Layer):
             _layer = Conv2D(channel, kernel_width, stride,
                             activation=hidden_activation)
             self._encoder_layers.append(_layer)
-        self._encoder_layers.add(Flatten())
+        self._encoder_layers.append(Flatten())
         self._output_layer = Dense(latent_dims + latent_dims, output_activation)
 
     def call(self, inputs):
