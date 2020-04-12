@@ -12,7 +12,7 @@
         "latent_dims": 3,
         "channels": [32, 64],
         "kernel_widths": [3, 3],
-        "strides": [1, 1],
+        "strides": [2, 2],
         "hidden_activation": "relu",
         "output_activation": "linear"
     },
