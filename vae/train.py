@@ -32,13 +32,18 @@ class Trainer(object):
 
         self.x = Input(batch_shape=(self.batch_size, *self.input_dims))
 
-        self.encoder = Encoder(**self.params['encoder'])(self.x)
-        self.get_loc = Lambda(lambda t: t[:, :self.latent_dims])(self.encoder)
-        self.get_log_var = Lambda(lambda t: t[:, self.latent_dims:])(self.encoder)
-        self.sample_z = Lambda(self._sampling)([self.get_loc, self.get_log_var])
-        self.decoder = Decoder(**self.params['decoder'])(self.sample_z)
+        self.encoder = Encoder(**self.params['encoder'])
+        self.encoded = self.encoder(self.x)
+        self.get_loc = Lambda(lambda t: t[:, :self.latent_dims])
+        self.get_log_var = Lambda(lambda t: t[:, self.latent_dims:])
+        self.loc = self.get_loc(self.encoded)
+        self.log_var = self.get_log_var(self.encoded)
+        self.sample_z = Lambda(self._sampling)
+        self.z = self.sample_z([self.loc, self.log_var])
+        self.decoder = Decoder(**self.params['decoder'])
+        self.decoded = self.decoder(self.z)
 
-        self.model = Model(inputs=[self.x], outputs=[self.decoder])
+        self.model = Model(self.x, self.decoded)
 
         self.loss = getattr(self, self.params['loss'])(self.x, self.decoder, self.get_loc, self.get_log_var)
 
