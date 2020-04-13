@@ -20,7 +20,7 @@ class Encoder(object):
             self._encoder_layers.append(_layer)
         self._encoder_layers.append(Flatten())
         self._output_layer = Dense(latent_dims + latent_dims, output_activation)
-        self._model = Sequential([self._input_layer, *self.encoder_layers, self._output_layer])
+        self._model = Sequential([self._input_layer, *self._encoder_layers, self._output_layer])
 
     def __call__(self, inputs):
         encoded = self._model(inputs)
@@ -44,7 +44,7 @@ class Decoder(object):
                                      activation=hidden_activation)
             self._decoder_layers.append(_layer)
         self._output_layer = Conv2DTranspose(1, 3, 1, padding="SAME")
-        self._model = Sequential([self._input_layer, *self.decoder_layers, self.output_layer])
+        self._model = Sequential([self._input_layer, *self._decoder_layers, self.output_layer])
 
     def __call__(self, inputs):
         decoded = self._model(inputs)
