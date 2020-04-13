@@ -1,11 +1,5 @@
-import warnings
-import sys
-import os
-import absl
-
 import tensorflow as tf
-import numpy as np
-from tensorflow.keras.layers import Lambda, Reshape, Conv2D, Conv2DTranspose, UpSampling2D, Dense, Input, InputLayer, Flatten, GaussianDropout, Layer
+from tensorflow.keras.layers import Lambda, Reshape, Conv2D, Conv2DTranspose, Dense, InputLayer, Flatten
 from tensorflow.keras.models import Model, Sequential
 import tensorflow.keras.backend as KB
 
@@ -13,10 +7,11 @@ KB.set_image_data_format('channels_last')
 KB.set_floatx('float32')
 
 class Encoder(object):
-    def __init__(self, channels, kernel_widths, strides,
+    def __init__(self, indput_dims, channels, kernel_widths, strides,
                  hidden_activation, output_activation,
                  latent_dims, name="encoder"):
         self.name = name
+        self._input_layer = InputLayer(input_dims)
         self._latent_dims = latent_dims
         self._encoder_layers = []
         for channel, kernel_width, stride in zip(channels, kernel_widths, strides):
@@ -25,12 +20,10 @@ class Encoder(object):
             self._encoder_layers.append(_layer)
         self._encoder_layers.append(Flatten())
         self._output_layer = Dense(latent_dims + latent_dims, output_activation)
+        self._model = Sequential([self._input_layer, *self.encoder_layers, self._output_layer])
 
     def __call__(self, inputs):
-        X = self._encoder_layers[0](inputs)
-        for layer in self._encoder_layers[1:]:
-            X = layer(X)
-        encoded = self._output_layer(X)
+        encoded = self._model(inputs)
         return encoded
 
 class Decoder(object):
@@ -42,6 +35,7 @@ class Decoder(object):
         self.name = name
         self._latent_dims = latent_dims
         self._decoder_layers = []
+        self._input_layer = InputLayer([latent_dims])
         self._decoder_layers.append( Dense(initial_dense_dims, initial_activation) )
         self._decoder_layers.append( Reshape(starting_target_shape) )
         for channel, kernel_width, stride in zip(channels, kernel_widths, strides):
@@ -50,10 +44,8 @@ class Decoder(object):
                                      activation=hidden_activation)
             self._decoder_layers.append(_layer)
         self._output_layer = Conv2DTranspose(1, 3, 1, padding="SAME")
+        self._model = Sequential([self._input_layer, *self.decoder_layers, self.output_layer])
 
     def __call__(self, inputs):
-        X = self._decoder_layers[0](inputs)
-        for layer in self._decoder_layers[1:]:
-            X = layer(X)
-        decoded = self._output_layer(X)
+        decoded = self._model(inputs)
         return decoded
