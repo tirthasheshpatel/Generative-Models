@@ -12,11 +12,11 @@ import tensorflow.keras.backend as KB
 KB.set_image_data_format('channels_last')
 KB.set_floatx('float32')
 
-class Encoder(Layer):
+class Encoder(object):
     def __init__(self, channels, kernel_widths, strides,
                  hidden_activation, output_activation,
                  latent_dims, name="encoder"):
-        super(Encoder, self).__init__(name=name)
+        self.name = name
         self._latent_dims = latent_dims
         self._encoder_layers = []
         for channel, kernel_width, stride in zip(channels, kernel_widths, strides):
@@ -26,20 +26,20 @@ class Encoder(Layer):
         self._encoder_layers.append(Flatten())
         self._output_layer = Dense(latent_dims + latent_dims, output_activation)
 
-    def call(self, inputs):
+    def __call__(self, inputs):
         X = self._encoder_layers[0](inputs)
         for layer in self._encoder_layers[1:]:
             X = layer(X)
         encoded = self._output_layer(X)
         return encoded
 
-class Decoder(Layer):
+class Decoder(object):
     def __init__(self, initial_dense_dims, initial_activation,
                  starting_target_shape,
                  channels, kernel_widths,
                  strides, hidden_activation,
                  latent_dims, name="decoder"):
-        super(Decoder, self).__init__(name=name)
+        self.name = name
         self._latent_dims = latent_dims
         self._decoder_layers = []
         self._decoder_layers.append( Dense(initial_dense_dims, initial_activation) )
@@ -51,7 +51,7 @@ class Decoder(Layer):
             self._decoder_layers.append(_layer)
         self._output_layer = Conv2DTranspose(1, 3, 1, padding="SAME")
 
-    def call(self, inputs):
+    def __call__(self, inputs):
         X = self._decoder_layers[0](inputs)
         for layer in self._decoder_layers[1:]:
             X = layer(X)
