@@ -9,6 +9,7 @@
 
     "encoder": {
         "name": "encoder",
+        "input_dims": [28, 28, 1],
         "latent_dims": 3,
         "channels": [32, 64],
         "kernel_widths": [3, 3],
