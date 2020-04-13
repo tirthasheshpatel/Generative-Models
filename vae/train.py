@@ -45,7 +45,7 @@ class Trainer(object):
 
         self.model = Model(self.x, self.decoded)
 
-        self.loss = getattr(self, self.params['loss'])(self.x, self.decoder, self.get_loc, self.get_log_var)
+        self.loss = getattr(self, self.params['loss'])(self.x, self.decoded, self.loc, self.log_var)
 
         self.learning_rate = self.params['learning_rate']
         self.optimizer = OPTIMIZERS[self.params['optimizer']](learning_rate=self.learning_rate)
