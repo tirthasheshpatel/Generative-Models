@@ -109,11 +109,6 @@ class BinaryRestrictedBoltzmannMachine(object):
             The expecation term appearing in the gradients wrt W, b and c
             respectively.
         """
-
-        # We first find the total number of training instances
-        # present in the array and then the number of visible
-        # and hidden dimentions.
-        num_examples = V_0.shape[-1]
         m = self.visible_dims
         n = self.hidden_dims
 
@@ -155,9 +150,9 @@ class BinaryRestrictedBoltzmannMachine(object):
         # Finally, we have to devide by the number of samples
         # we have drawn to calculate the expectation
         return (
-            expectation_w / float(tune+num_examples),
-            expectation_b / float(tune+num_examples),
-            expectation_c / float(tune+num_examples)
+            expectation_w / float(tune),
+            expectation_b / float(tune),
+            expectation_c / float(tune)
         )
 
     def _contrastive_divergence(self, V_0, burn_in, tune):
@@ -222,7 +217,7 @@ class BinaryRestrictedBoltzmannMachine(object):
 
         return dloss_dW, dloss_db, dloss_dc
 
-    def _apply_grads(self, lr, dloss_dW, dloss_db, dloss_dc):
+    def _apply_grads(self, lr, dloss_dW, dloss_db, dloss_dc, num_examples):
         """Update the parameters [W, b, c] of the model using
         stochastic gradient descent.
 
@@ -246,9 +241,9 @@ class BinaryRestrictedBoltzmannMachine(object):
         """
         # Remember we are perfoming gradient ASSCENT (not descent)
         # to MAXIMIZE (not minimize) the energy function!
-        self.W = self.W + lr * dloss_dW
-        self.b = self.b + lr * dloss_db
-        self.c = self.c + lr * dloss_dc
+        self.W = self.W + lr * dloss_dW / num_examples
+        self.b = self.b + lr * dloss_db / num_examples
+        self.c = self.c + lr * dloss_dc / num_examples
 
     def fit(self, X, lr=0.1, epochs=10, method="contrastive_divergence", burn_in=1000, tune=2000, verbose=False):
         r"""Train the model on provided data
@@ -280,7 +275,7 @@ class BinaryRestrictedBoltzmannMachine(object):
         # We want to vectorize over multiple batches
         # and so we have to reshape our data to `(n_features, n_samples)`
         X = X.T
-        num_examples = X.shape[-1]
+        num_examples = X.shape[1]
         self.visible_dims = X.shape[0]
 
         m = self.visible_dims
@@ -309,7 +304,7 @@ class BinaryRestrictedBoltzmannMachine(object):
             dloss_dW, dloss_db, dloss_dc = self._param_grads(X, Ew, Eb, Ec)
 
             # Update the parameters
-            self._apply_grads(lr, dloss_dW, dloss_db, dloss_dc)
+            self._apply_grads(lr, dloss_dW, dloss_db, dloss_dc, num_examples)
 
             if verbose:
                 sys.stdout.write(f"\rEpoch {_+1}")
