@@ -7,7 +7,7 @@ KB.set_image_data_format('channels_last')
 KB.set_floatx('float32')
 
 class Encoder(object):
-    def __init__(self, indput_dims, channels, kernel_widths, strides,
+    def __init__(self, input_dims, channels, kernel_widths, strides,
                  hidden_activation, output_activation,
                  latent_dims, name="encoder"):
         self.name = name
