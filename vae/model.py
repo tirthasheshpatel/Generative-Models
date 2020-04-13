@@ -27,9 +27,6 @@ class Encoder(Layer):
         self._output_layer = Dense(latent_dims + latent_dims, output_activation)
 
     def call(self, inputs):
-        return self.unsigned_call(inputs)
-
-    def unsigned_call(self, inputs):
         X = self._encoder_layers[0](inputs)
         for layer in self._encoder_layers[1:]:
             X = layer(X)
@@ -55,9 +52,6 @@ class Decoder(Layer):
         self._output_layer = Conv2DTranspose(1, 3, 1, padding="SAME")
 
     def call(self, inputs):
-        return self.unsigned_call(inputs)
-
-    def unsigned_call(self, inputs):
         X = self._decoder_layers[0](inputs)
         for layer in self._decoder_layers[1:]:
             X = layer(X)
