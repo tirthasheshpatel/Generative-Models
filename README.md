@@ -12,6 +12,9 @@ Data must of the shape ``(n_samples, n_features)``. For example, the ``n_feature
 
 The following example shows how to train the RBMs on mnist dataset consisting of the digit 5 only.
 
+<detials>
+<summary>Example Code</summary>
+
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
@@ -64,6 +67,8 @@ ax[2, 2].imshow(images[8].reshape(28, 28))
 fig.suptitle("Generated instances")
 plt.show()
 ```
+
+</details>
 
 Reconstructed images
 
