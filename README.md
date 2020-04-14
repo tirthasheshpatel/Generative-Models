@@ -10,31 +10,31 @@ The usage is shown below.
 
 Data must of the shape ``(n_samples, n_features)``. For example, the ``n_features`` of images are its number of pixels and ``n_samples`` are the number of samples present in your training dataset. If there are 60000 images of size 28x28, then the input shape will be ``(60000, 784)``. The ``fit(X, lr=1., epochs=10, method="contrastive_divergence", burn_in=1000, tune=2000, verbose=False)`` method is used to train the RBM on given dataset ``X``. Once trained ``encode(training_instance)`` is used to encode a training instance onto the latent space learned by the RBM. You can use ``decode()`` method to generate new random images or ``decode(encoded)`` method to deocde an already encoded image. This is not limited to images! Any type of data can be used!
 
-The following example shows how to train the RBMs on mnist dataset.
+The following example shows how to train the RBMs on mnist dataset consisting of the digit 5 only.
 
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
-import rbm
+from rbm import BinaryRestrictedBoltzmannMachine
 from keras.datasets import mnist
 
 (X_train, y), (_, _) = mnist.load_data()
 
 # Normalize and reshape
 X_train = X_train.reshape(60000, -1)
-X_train = 1. * ((X_train[y == 3][:101] / 255.) >= 0.5)
+X_train = 1. * ((X_train[y == 5] / 255.) >= 0.5)
 
 # Plot some training isntances
 fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
-ax[0, 0].imshow(X_train[0].reshape(28, 28))
-ax[0, 1].imshow(X_train[1].reshape(28, 28))
-ax[0, 2].imshow(X_train[2].reshape(28, 28))
-ax[1, 0].imshow(X_train[3].reshape(28, 28))
-ax[1, 1].imshow(X_train[4].reshape(28, 28))
-ax[1, 2].imshow(X_train[5].reshape(28, 28))
-ax[2, 0].imshow(X_train[6].reshape(28, 28))
-ax[2, 1].imshow(X_train[7].reshape(28, 28))
-ax[2, 2].imshow(X_train[8].reshape(28, 28))
+ax[0, 0].imshow(X_train[10].reshape(28, 28))
+ax[0, 1].imshow(X_train[11].reshape(28, 28))
+ax[0, 2].imshow(X_train[12].reshape(28, 28))
+ax[1, 0].imshow(X_train[13].reshape(28, 28))
+ax[1, 1].imshow(X_train[14].reshape(28, 28))
+ax[1, 2].imshow(X_train[15].reshape(28, 28))
+ax[2, 0].imshow(X_train[16].reshape(28, 28))
+ax[2, 1].imshow(X_train[17].reshape(28, 28))
+ax[2, 2].imshow(X_train[18].reshape(28, 28))
 fig.suptitle("Training instances")
 plt.show()
 
@@ -43,13 +43,13 @@ plt.show()
 hidden_dims = 3
 
 # Define our model
-model = rbm.BinaryRestrictedBoltzmannMachine(hidden_dims)
+model = BinaryRestrictedBoltzmannMachine(hidden_dims)
 
 # Train the model on our dataset with learning rate 1.0
-model.fit(X_train, lr=1.0, method="gibbs_sampling", burn_in=1000, tune=2000, epochs=20, verbose=True)
+model.fit(X_train, lr=1.0, burn_in=None, tune=1, epochs=100, verbose=True)
 
 # Use the `decode()` method to generate an image.
-images = [model.decode() for _ in range(9)]
+images = [model.generate_smooth() for _ in range(9)]
 
 fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
 ax[0, 0].imshow(images[0].reshape(28, 28))
@@ -65,13 +65,14 @@ fig.suptitle("Generated instances")
 plt.show()
 ```
 
-Some training instances are shown below.
+Reconstructed images
 
-![Training instances](images/rbm_train_3.png)
+![Reconstruction](images/rbm_train_5.png)
+![Reconstruction](images/rbm_recon_5.png)
 
-This model generates the following images!
+Generated Images
 
-![Generated images](images/rbm_generated_3.png)
+![Generated images](images/rbm_gen.png)
 
 ### Variational Auto-Encoders
 

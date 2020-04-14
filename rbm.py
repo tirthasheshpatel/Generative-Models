@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 
+
 def sigmoid(X):
     r"""Evaluate the sigmoid function elementwise on
     a vector or matrix X
@@ -15,8 +16,9 @@ def sigmoid(X):
     sigma_X: array_like of shape `X.shape`
         Array on which sigmoid function is applied elementwise
     """
-    sigma_X = 1. / (1. + np.exp(-X))
+    sigma_X = 1.0 / (1.0 + np.exp(-X))
     return sigma_X
+
 
 class BinaryRestrictedBoltzmannMachine(object):
     r"""A restricted boltzmann machine model that takes
@@ -79,10 +81,10 @@ class BinaryRestrictedBoltzmannMachine(object):
         # One more thing, this is called "block" gibb's
         # sampling where we vectorize over all dimensions
         # and sample from all the dimensions at the same time.
-        H_t = 1. * (np.random.rand(*probs_H.shape) <= probs_H)
+        H_t = 1.0 * (np.random.rand(*probs_H.shape) <= probs_H)
 
         probs_V = sigmoid(self.W @ H_t + self.b)
-        V_tplus1 = 1. * (np.random.rand(*probs_V.shape) <= probs_V)
+        V_tplus1 = 1.0 * (np.random.rand(*probs_V.shape) <= probs_V)
 
         return V_tplus1
 
@@ -125,12 +127,10 @@ class BinaryRestrictedBoltzmannMachine(object):
         # The chain has now reached its stationary distribution
         # and we can start collecting the samples and estimate
         # required estimations.
-        expectation_b = np.sum(V_sampled,
-                               axis=-1,
-                               keepdims=True)
-        expectation_c = np.sum(sigmoid(self.W.T @ V_sampled + self.c),
-                               axis=-1,
-                               keepdims=True)
+        expectation_b = np.sum(V_sampled, axis=-1, keepdims=True)
+        expectation_c = np.sum(
+            sigmoid(self.W.T @ V_sampled + self.c), axis=-1, keepdims=True
+        )
         expectation_w = V_sampled @ sigmoid(self.W.T @ V_sampled + self.c).T
 
         # Collect a `tune` number of samples and find the
@@ -139,12 +139,10 @@ class BinaryRestrictedBoltzmannMachine(object):
         for i in range(tune):
             V_sampled = self.__gibbs_step(V_sampled)
 
-            expectation_b += np.sum(V_sampled,
-                                    axis=-1,
-                                    keepdims=True)
-            expectation_c += np.sum(sigmoid(self.W.T @ V_sampled + self.c),
-                                    axis=-1,
-                                    keepdims=True)
+            expectation_b += np.sum(V_sampled, axis=-1, keepdims=True)
+            expectation_c += np.sum(
+                sigmoid(self.W.T @ V_sampled + self.c), axis=-1, keepdims=True
+            )
             expectation_w += V_sampled @ sigmoid(self.W.T @ V_sampled + self.c).T
 
         # Finally, we have to devide by the number of samples
@@ -152,7 +150,7 @@ class BinaryRestrictedBoltzmannMachine(object):
         return (
             expectation_w / float(tune),
             expectation_b / float(tune),
-            expectation_c / float(tune)
+            expectation_c / float(tune),
         )
 
     def _contrastive_divergence(self, V_0, burn_in, tune):
@@ -179,12 +177,10 @@ class BinaryRestrictedBoltzmannMachine(object):
         for _ in range(tune):
             V_tilt = self.__gibbs_step(V_tilt)
 
-        expectation_b = np.sum(V_tilt,
-                               axis=-1,
-                               keepdims=True)
-        expectation_c = np.sum(sigmoid(self.W.T @ V_tilt + self.c),
-                               axis=-1,
-                               keepdims=True)
+        expectation_b = np.sum(V_tilt, axis=-1, keepdims=True)
+        expectation_c = np.sum(
+            sigmoid(self.W.T @ V_tilt + self.c), axis=-1, keepdims=True
+        )
         expectation_w = V_tilt @ sigmoid(self.W.T @ V_tilt + self.c).T
         return expectation_w, expectation_b, expectation_c
 
@@ -213,11 +209,14 @@ class BinaryRestrictedBoltzmannMachine(object):
         """
         dloss_dW = V @ sigmoid(self.W.T @ V + self.c).T - expectation_w
         dloss_db = np.sum(V, axis=-1, keepdims=True) - expectation_b
-        dloss_dc = np.sum(sigmoid(self.W.T @ V + self.c), axis=-1, keepdims=True) - expectation_c
+        dloss_dc = (
+            np.sum(sigmoid(self.W.T @ V + self.c), axis=-1, keepdims=True)
+            - expectation_c
+        )
 
         return dloss_dW, dloss_db, dloss_dc
 
-    def _apply_grads(self, lr, dloss_dW, dloss_db, dloss_dc, num_examples):
+    def _apply_grads(self, lr, dloss_dW, dloss_db, dloss_dc):
         """Update the parameters [W, b, c] of the model using
         stochastic gradient descent.
 
@@ -241,11 +240,20 @@ class BinaryRestrictedBoltzmannMachine(object):
         """
         # Remember we are perfoming gradient ASSCENT (not descent)
         # to MAXIMIZE (not minimize) the energy function!
-        self.W = self.W + lr * dloss_dW / num_examples
-        self.b = self.b + lr * dloss_db / num_examples
-        self.c = self.c + lr * dloss_dc / num_examples
+        self.W = self.W + lr * dloss_dW / self.num_examples
+        self.b = self.b + lr * dloss_db / self.num_examples
+        self.c = self.c + lr * dloss_dc / self.num_examples
 
-    def fit(self, X, lr=0.1, epochs=10, method="contrastive_divergence", burn_in=1000, tune=2000, verbose=False):
+    def fit(
+        self,
+        X,
+        lr=0.1,
+        epochs=10,
+        method="contrastive_divergence",
+        burn_in=1000,
+        tune=2000,
+        verbose=False,
+    ):
         r"""Train the model on provided data
 
         Parameters
@@ -275,7 +283,7 @@ class BinaryRestrictedBoltzmannMachine(object):
         # We want to vectorize over multiple batches
         # and so we have to reshape our data to `(n_features, n_samples)`
         X = X.T
-        num_examples = X.shape[1]
+        self.num_examples = X.shape[1]
         self.visible_dims = X.shape[0]
 
         m = self.visible_dims
@@ -292,9 +300,11 @@ class BinaryRestrictedBoltzmannMachine(object):
             elif method == "contrastive_divergence":
                 _method = self._contrastive_divergence
             else:
-                raise ValueError(f"invalid method: {method}. You sholud inherit this "
-                                 f"class and implement the method with an `_` at"
-                                 f"the start to use it instead of built-in methods.")
+                raise ValueError(
+                    f"invalid method: {method}. You sholud inherit this "
+                    f"class and implement the method with an `_` at"
+                    f"the start to use it instead of built-in methods."
+                )
 
             V_0 = X
             Ew, Eb, Ec = _method(V_0, burn_in=burn_in, tune=tune)
@@ -304,14 +314,14 @@ class BinaryRestrictedBoltzmannMachine(object):
             dloss_dW, dloss_db, dloss_dc = self._param_grads(X, Ew, Eb, Ec)
 
             # Update the parameters
-            self._apply_grads(lr, dloss_dW, dloss_db, dloss_dc, num_examples)
+            self._apply_grads(lr, dloss_dW, dloss_db, dloss_dc)
 
             if verbose:
                 sys.stdout.write(f"\rEpoch {_+1}")
 
         return self
 
-    def decode(self, H=None):
+    def decode(self, H=None, return_proba=False):
         """Move from latent space to data space. Acts like a generator.
 
         Parameters
@@ -319,7 +329,7 @@ class BinaryRestrictedBoltzmannMachine(object):
         H: array_like, optional
             A vector of latent/hidden variables. If `None`, then it is
             randomly initialized
-        
+
         Returns
         -------
         decoded: array_like
@@ -327,11 +337,13 @@ class BinaryRestrictedBoltzmannMachine(object):
         """
         # We generate a random latent space if not given
         if H is None:
-            H = 1. * (np.random.rand(self.hidden_dims, 1) >= 0.5)
+            H = 1.0 * (np.random.rand(self.hidden_dims, 1) >= 0.5)
 
         # We sample the Vs given Hs.
         probs_V = sigmoid(self.W @ H + self.b)
-        return 1. * (np.random.rand(*probs_V.shape) <= probs_V)
+        if return_proba:
+            return probs_V
+        return 1.0 * (np.random.rand(*probs_V.shape) <= probs_V)
 
     def encode(self, V):
         """Encode the given data in its latent variables.
@@ -348,4 +360,14 @@ class BinaryRestrictedBoltzmannMachine(object):
         """
         # We will sampe a random H for a given V.
         probs_H = sigmoid(self.W.T @ V + self.c)
-        return 1. * (np.random.rand(*probs_H.shape) <= probs_H)
+        return 1.0 * (np.random.rand(*probs_H.shape) <= probs_H)
+
+    def generate_smooth(self):
+        """Generate a continuous input space.
+
+        Returns
+        -------
+        generated: array-like
+            An array of generated input space.
+        """
+        return self.decode(return_proba=True)

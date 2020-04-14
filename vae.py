@@ -9,10 +9,12 @@ from keras import backend as K
 from keras import metrics
 from keras.datasets import mnist
 from keras.utils import np_utils
+
 # Start tf session so we can run code.
 sess = tf.InteractiveSession()
 # Connect keras to the created session.
 K.set_session(sess)
+
 
 def vlb_binomial(x, x_decoded_mean, t_mean, t_log_var):
     """Returns the value of negative Variational Lower Bound
@@ -26,16 +28,24 @@ def vlb_binomial(x, x_decoded_mean, t_mean, t_log_var):
     Returns:
         A tf.Tensor with one element (averaged across the batch), VLB
     """
-    vlb = tf.reduce_mean(tf.reduce_sum(x * tf.log( x_decoded_mean+1e-19 ) + (1-x) * tf.log( 1-x_decoded_mean+1e-19 ), axis = 1 ) - 0.5 * tf.reduce_sum( -t_log_var + tf.exp( t_log_var ) + tf.square(t_mean) - 1 , axis = 1 ))
+    vlb = tf.reduce_mean(
+        tf.reduce_sum(
+            x * tf.log(x_decoded_mean + 1e-19)
+            + (1 - x) * tf.log(1 - x_decoded_mean + 1e-19),
+            axis=1,
+        )
+        - 0.5
+        * tf.reduce_sum(-t_log_var + tf.exp(t_log_var) + tf.square(t_mean) - 1, axis=1)
+    )
     return -vlb
 
 
 def create_encoder(input_dim):
     # Encoder network.
     # We instantiate these layers separately so as to reuse them later
-    encoder = Sequential(name='encoder')
+    encoder = Sequential(name="encoder")
     encoder.add(InputLayer([input_dim]))
-    encoder.add(Dense(intermediate_dim, activation='relu'))
+    encoder.add(Dense(intermediate_dim, activation="relu"))
     encoder.add(Dense(2 * latent_dim))
     return encoder
 
@@ -43,14 +53,14 @@ def create_encoder(input_dim):
 def create_decoder(input_dim):
     # Decoder network
     # We instantiate these layers separately so as to reuse them later
-    decoder = Sequential(name='decoder')
+    decoder = Sequential(name="decoder")
     decoder.add(InputLayer([input_dim]))
-    decoder.add(Dense(intermediate_dim, activation='relu'))
-    decoder.add(Dense(original_dim, activation='sigmoid'))
+    decoder.add(Dense(intermediate_dim, activation="relu"))
+    decoder.add(Dense(original_dim, activation="sigmoid"))
     return decoder
 
 
-# Sampling from the distribution 
+# Sampling from the distribution
 #     q(t | x) = N(t_mean, exp(t_log_var))
 # with reparametrization trick.
 def sampling(args):
@@ -68,14 +78,14 @@ def sampling(args):
     t_mean, t_log_var = args
     # YOUR CODE HERE
     epsilon = K.random_normal(t_mean.shape)
-    z = epsilon*K.exp(0.5*t_log_var) + t_mean
+    z = epsilon * K.exp(0.5 * t_log_var) + t_mean
     return z
 
 
 batch_size = 100
-original_dim = 784 # Number of pixels in MNIST images.
-latent_dim = 3 # d, dimensionality of the latent code t.
-intermediate_dim = 128 # Size of the hidden layer.
+original_dim = 784  # Number of pixels in MNIST images.
+latent_dim = 3  # d, dimensionality of the latent code t.
+intermediate_dim = 128  # Size of the hidden layer.
 epochs = 20
 
 x = Input(batch_shape=(batch_size, original_dim))
