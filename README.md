@@ -12,7 +12,7 @@ Data must of the shape ``(n_samples, n_features)``. For example, the ``n_feature
 
 The following example shows how to train the RBMs on mnist dataset consisting of the digit 5 only.
 
-<detials>
+<details>
 <summary>Example Code</summary>
 
 ```python
