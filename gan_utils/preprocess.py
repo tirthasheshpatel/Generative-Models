@@ -86,4 +86,4 @@ def train_generator(files, labels):
                 batch_images.append(img)
 
             batch_images = np.stack(batch_images, axis=0)
-            yield batch_images, batch_images
+            yield batch_images, np.ones_like(batch_images)
