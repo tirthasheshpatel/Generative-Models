@@ -36,7 +36,7 @@ def image_center_crop(img):
 
     return cropped_img
 
-def prepare_raw_bytes_for_model(raw_bytes, normalize_for_model=True):
+def prepare_raw_bytes_for_model(raw_bytes, normalize_for_model=False):
     img = decode_image_from_raw_bytes(raw_bytes)  # decode image raw bytes to matrix
     img = image_center_crop(img)  # take squared center crop
     img = cv2.resize(img, (IMG_SIZE, IMG_SIZE))  # resize for our model
