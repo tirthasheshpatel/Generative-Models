@@ -78,6 +78,7 @@ def batch_generator(items, batch_size):
     yield batch
 
 def train_generator(files, labels, is_genenrator=False):
+    import sys
     while True:
         for batch in batch_generator(raw_generator_with_label_from_tar("data/102flowers.tgz", files, labels), BATCH_SIZE):
             batch_images = []
@@ -89,4 +90,5 @@ def train_generator(files, labels, is_genenrator=False):
             if is_genenrator:
                 yield batch_images, batch_images
             else:
+                sys.stdout.write(str(batch_images.shape))
                 yield batch_images, np.ones((batch_images.shape[0], 1))
