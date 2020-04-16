@@ -1,0 +1,2 @@
+finetuned_* filter=lfs diff=lfs merge=lfs -text
+*finetuned_* filter=lfs diff=lfs merge=lfs -text
