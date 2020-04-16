@@ -49,5 +49,5 @@ def GANGenerator():
                                            strides=2,
                                            padding='SAME',
                                            data_format='channels_last',
-                                           activation='relu'))
+                                           activation='tanh'))
     return model
