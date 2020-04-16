@@ -10,7 +10,7 @@ def GANDiscriminator():
                                            weights='imagenet')
     new_output = keras.layers.GlobalAveragePooling2D()(model.output)
     new_output = keras.layers.Dense(1, activation='sigmoid')(new_output)
-    # model = keras.engine.training.Model(model.inputs, new_output)
+    model = keras.engine.training.Model(model.inputs, new_output)
 
     for layer in model.layers:
         layer.trainable = True
