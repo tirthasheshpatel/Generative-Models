@@ -102,14 +102,6 @@ def download_inception_weights(keras_models, keras_datasets):
         ],
         keras_models
     )
-    # sequential_downloader(
-    #     "v0.2",
-    #     [
-    #         "cifar-10-batches-py.tar.gz",
-    #         "mnist.npz"
-    #     ],
-    #     keras_datasets
-    # )
 
 
 def download_flowers_dataset(save_path):
